@@ -24,13 +24,33 @@ const client = new MongoClient(uri, {
     deprecationErrors: true,
   }
 });
+ 
+const userCollection = client.db('TaskMania').collection('Users')
 
 async function run() {
   try {
-    // Connect the client to the server	(optional starting in v4.7)
-    // await client.connect();
-    // Send a ping to confirm a successful connection
-    
+   
+    // post user
+app.post('/user',async(req,res)=>{
+  const user = req.body;
+  const query = {email:user.email}
+  const isExist = await userCollection.findOne(query)
+  if(isExist){
+    return res.send({message:'user all ready exist ', insertedId:null})
+  }
+  console.log(user);
+  const result = await userCollection.insertOne(user)
+  res.send(result)
+})
+// get specific user
+app.get('/user/:email', async(req,res)=>{
+  const email = req.params.email;
+  console.log(email);
+  const query = {email:email}
+  const result = await userCollection.findOne(query)
+  res.send(result)
+  // console.log(user);
+})
 
 
 
