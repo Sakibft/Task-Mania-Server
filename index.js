@@ -1,7 +1,7 @@
 const express = require('express')
 const app = express()
 const cors = require('cors')
-const port = process.env.PORT ||  5000 ;
+const port = process.env.PORT || 5000;
 require('dotenv').config()
 
 // middleware
@@ -24,40 +24,45 @@ const client = new MongoClient(uri, {
     deprecationErrors: true,
   }
 });
- 
+
 const userCollection = client.db('TaskMania').collection('Users')
 const taskCollection = client.db('TaskMania').collection('Tasks')
 async function run() {
   try {
-   
+
     // post user
-app.post('/user',async(req,res)=>{
-  const user = req.body;
-  const query = {email:user.email}
-  const isExist = await userCollection.findOne(query)
-  if(isExist){
-    return res.send({message:'user all ready exist ', insertedId:null})
-  }
-  console.log(user);
-  const result = await userCollection.insertOne(user)
-  res.send(result)
-})
-// get specific user
-app.get('/user/:email', async(req,res)=>{
-  const email = req.params.email;
-  console.log(email);
-  const query = {email:email}
-  const result = await userCollection.findOne(query)
-  res.send(result)
-  // console.log(user);
-})
-// post task 
-app.post('/task', async(req,res)=>{
-  const task = req.body;
-const result = await taskCollection.insertOne(task)
-console.log(task); 
-res.send(result)
-})
+    app.post('/user', async (req, res) => {
+      const user = req.body;
+      const query = { email: user.email }
+      const isExist = await userCollection.findOne(query)
+      if (isExist) {
+        return res.send({ message: 'user all ready exist ', insertedId: null })
+      }
+      console.log(user);
+      const result = await userCollection.insertOne(user)
+      res.send(result)
+    })
+    // get specific user
+    app.get('/user/:email', async (req, res) => {
+      const email = req.params.email;
+      console.log(email);
+      const query = { email: email }
+      const result = await userCollection.findOne(query)
+      res.send(result)
+      // console.log(user);
+    })
+    // post task 
+    app.post('/task', async (req, res) => {
+      const task = req.body;
+      const result = await taskCollection.insertOne(task)
+      console.log(task);
+      res.send(result)
+    })
+
+    app.get('/tasks', async (req, res) => {
+      const tasks = await taskCollection.find().toArray();
+      res.send(tasks)
+    })
 
 
 
