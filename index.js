@@ -26,7 +26,7 @@ const client = new MongoClient(uri, {
 });
  
 const userCollection = client.db('TaskMania').collection('Users')
-
+const taskCollection = client.db('TaskMania').collection('Tasks')
 async function run() {
   try {
    
@@ -51,7 +51,13 @@ app.get('/user/:email', async(req,res)=>{
   res.send(result)
   // console.log(user);
 })
-
+// post task 
+app.post('/task', async(req,res)=>{
+  const task = req.body;
+const result = await taskCollection.insertOne(task)
+console.log(task); 
+res.send(result)
+})
 
 
 
