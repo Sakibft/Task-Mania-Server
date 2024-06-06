@@ -58,13 +58,23 @@ async function run() {
       console.log(task);
       res.send(result)
     })
-
+// get all task 
+// /tasks
+// GET
+// It will send all documents from  taskCollection where the taskCount is greater than 0  from Database.   ( use $gt ) 
     app.get('/tasks', async (req, res) => {
       const tasks = await taskCollection.find().toArray();
       res.send(tasks)
     })
-
-
+//  my tasks 
+app.get('/tasks/:email', async(req,res)=>{
+  const email = req.params.email;
+  const query = {email : email }
+  // date time diya sort hocce na .
+  const result = await taskCollection.find(query).sort({date : -1 }).toArray();
+  console.log(email,'hah');
+  res.send(result)
+})
 
 
 
