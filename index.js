@@ -75,6 +75,10 @@ app.get('/tasks/:email', async(req,res)=>{
   console.log(email,'hah');
   res.send(result)
 })
+// delete tasks
+// ● onClicking Delete, delete the task from task Collection. And Increase the
+// (task_quantity* payable_amount) coin in his available coin
+
 app.delete('/task/:id', async(req,res)=>{
   const id = req.params.id;
   const query = {_id : new ObjectId(id)}
@@ -82,8 +86,19 @@ app.delete('/task/:id', async(req,res)=>{
   console.log(id);
   res.send(result);
 })
-
-
+//  update tasks 
+ app.put('/task/update/:id',async(req,res)=> {
+  const update = req.body;
+  const id = req.params.id;
+  const query = {_id : new ObjectId(id)}
+  const newUp = {
+   $set:{
+     ...update,
+   }
+  }
+  const result = await taskCollection.updateOne(query, newUp)
+  res.send(result)
+})
 
 
 
