@@ -27,6 +27,7 @@ const client = new MongoClient(uri, {
 
 const userCollection = client.db('TaskMania').collection('Users')
 const taskCollection = client.db('TaskMania').collection('Tasks')
+const purchaseCoinCollection = client.db('TaskMania').collection('PurchaseCoin')
 async function run() {
   try {
 
@@ -99,7 +100,11 @@ app.delete('/task/:id', async(req,res)=>{
   const result = await taskCollection.updateOne(query, newUp)
   res.send(result)
 })
-
+// get all purchase data
+app.get('/purchaseCoin',async(req,res)=>{
+  const result = await purchaseCoinCollection.find().toArray()
+  res.send(result)
+})
 
 
 
