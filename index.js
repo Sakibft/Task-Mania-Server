@@ -35,6 +35,7 @@ const client = new MongoClient(uri, {
 const userCollection = client.db('TaskMania').collection('Users')
 const taskCollection = client.db('TaskMania').collection('Tasks')
 const purchaseCoinCollection = client.db('TaskMania').collection('PurchaseCoin')
+const paymentCoinCollection = client.db('TaskMania').collection('payment')
 async function run() {
   try {
 
@@ -134,7 +135,13 @@ console.log(coin);
     clientSecret : paymentIntent.client_secret
   });
 });
-
+// post payment data
+app.post('/payment',async(req,res)=>{
+  const payment = req.body;
+  console.log(payment);
+  const result = await paymentCoinCollection.insertOne(payment)
+  res.send(result)
+})
 
 
     await client.db("admin").command({ ping: 1 });
