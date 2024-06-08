@@ -1,11 +1,18 @@
 const express = require('express')
 const app = express()
 const cors = require('cors')
+require('dotenv').config();
+const stripe = require('stripe')(process.env.STRIPE_SECRETE_KEY)
 const port = process.env.PORT || 5000;
 require('dotenv').config()
-
+// console.log(stripe,'secrete');
 // middleware
-app.use(cors());
+app.use(cors({
+  origin:[
+    'http://localhost:5173',  
+   'https://taskmania-85588.web.app'
+  ], 
+}));
 app.use(express.json())
 
 
@@ -106,7 +113,27 @@ app.get('/purchaseCoin',async(req,res)=>{
   res.send(result)
 })
 
+// payment intent 
+app.post('/create-payment-intent', async(req,res)=>{
+  const {coin} = req.body;
+console.log(coin);  
+  // Check if coin is a valid number
+  if(isNaN(coin) || coin <= 0) {
+    return res.status(400).send({ error: 'Invalid coin amount' });
+  }
+  const amount = parseInt(coin * 100);
+  console.log(amount, 'inside the intent ');
 
+  const paymentIntent = await stripe.paymentIntents.create({
+    amount: amount,
+    currency: "usd",
+    payment_method_types:['card']
+  });
+  
+  res.send({
+    clientSecret : paymentIntent.client_secret
+  });
+});
 
 
 
