@@ -53,25 +53,23 @@ async function run() {
       res.send(result)
     })
     // update user coin 
-    app.put('/user', async(req,res)=>{
+    app.put('/user', async (req, res) => {
       const cn = req.body;
       const email = cn.email;
       const coin = cn.coin;
-      
       const query = { email: email };
       const user = await userCollection.findOne(query);
-      if(user){
+      if (user) {
         const newCoinValue = (user.coin || 0) + coin;
-
         const newUp = {
           $set: {
-             coin:newCoinValue 
+            coin: newCoinValue
           }
         }
         const result = await userCollection.updateOne(query, newUp)
         res.send(result)
       }
-      console.log(coin,'update this coin in the database');
+      console.log(coin, 'update this coin in the database');
     })
     // get specific user
     app.get('/user/:email', async (req, res) => {
@@ -115,27 +113,60 @@ async function run() {
       res.send(result)
     })
     // get id based tsk for show task detail => worker
-    app.get('/task/:id', async(req,res)=>{
+    app.get('/task/:id', async (req, res) => {
       const id = req.params.id;
-      const query = {_id:new ObjectId(id)}
+      const query = { _id: new ObjectId(id) }
       const result = await taskCollection.findOne(query)
       res.send(result)
-      console.log(id,'id from worker detail');
+      console.log(id, 'id from worker detail');
     })
     // post submission details
-    app.post('/submission',async(req,res)=>{
+    app.post('/submission', async (req, res) => {
       const submit = req.body;
       console.log(submit);
       const result = await submissionCollection.insertOne(submit)
       res.send(result)
     })
-    // get submission detail 
-    app.get('/submission/:email',async(req,res)=>{
+    // get submission detail with email ;
+    app.get('/submission/:email', async (req, res) => {
       const email = req.params.email;
-      const query = {workerEmail:email};
+      const query = { workerEmail: email };
       const result = await submissionCollection.find(query).toArray();
       res.send(result)
-      console.log(email,'in side the submission');
+      console.log(email, 'in side the submission');
+    })
+    // get ll task 
+    app.get('/submission', async (req, res) => {
+      const status = req.query.status;
+      console.log(status);
+      const query = { status: status }
+      const result = await submissionCollection.find(query).toArray();
+      res.send(result)
+    })
+    // Update status
+    app.put('/submission', async (req, res) => {
+      const info = req.body;
+      const status = info.status;
+       
+      const id = info.id;
+      console.log(id,'client theke id ');
+      const query = { taskId: id }
+      const task = await submissionCollection.findOne(query);
+      console.log(query, 'match');
+      if (task) {
+        const newUp = {
+          $set: {
+            status: status,
+             
+          }
+        }
+        const result = await submissionCollection.updateMany(query, newUp);
+        res.send(result);
+      }
+
+      // const result = await submissionCollection.updateOne(query,newUp)
+      // res.send(result)
+      
     })
     // delete tasks
     // ● onClicking Delete, delete the task from task Collection. And Increase the
