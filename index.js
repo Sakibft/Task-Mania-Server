@@ -81,17 +81,36 @@ async function run() {
       // console.log(user);
     })
     // get all user
-    app.get('/user', async(req,res)=>{
+    app.get('/user', async (req, res) => {
       const result = await userCollection.find().toArray();
       res.send(result)
     })
     // delete user
-    app.delete('/user/:id',async(req,res)=>{
+    app.delete('/user/:id', async (req, res) => {
       const id = req.params.id;
-      const query = {_id : new ObjectId(id)}
+      const query = { _id: new ObjectId(id) }
       const result = await userCollection.deleteOne(query);
       res.send(result)
       console.log(id);
+    })
+    // update user status 
+    app.put('/userStatus', async (req, res) => {
+      const usr = req.body;
+      const email = usr?.email;
+      const status = usr?.status;
+      // console.log(email, status);
+      // console.log(usr);
+      const query = {email:email}
+      const user = userCollection.findOne(query)
+      if(user){
+        const newUp = {
+          $set: {
+           category : status
+          }
+        }
+        const result = await userCollection.updateOne(query,newUp)
+        res.send(result)
+      }
     })
     // post task 
     app.post('/task', async (req, res) => {
@@ -160,9 +179,9 @@ async function run() {
     app.put('/submission', async (req, res) => {
       const info = req.body;
       const status = info.status;
-       
+
       const id = info.id;
-      console.log(id,'client theke id ');
+      console.log(id, 'client theke id ');
       const query = { taskId: id }
       const task = await submissionCollection.findOne(query);
       console.log(query, 'match');
@@ -170,7 +189,7 @@ async function run() {
         const newUp = {
           $set: {
             status: status,
-             
+
           }
         }
         const result = await submissionCollection.updateMany(query, newUp);
@@ -179,7 +198,7 @@ async function run() {
 
       // const result = await submissionCollection.updateOne(query,newUp)
       // res.send(result)
-      
+
     })
     // delete tasks
     // ● onClicking Delete, delete the task from task Collection. And Increase the
