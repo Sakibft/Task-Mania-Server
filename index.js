@@ -129,6 +129,14 @@ async function run() {
       const result = await submissionCollection.insertOne(submit)
       res.send(result)
     })
+    // get submission detail 
+    app.get('/submission/:email',async(req,res)=>{
+      const email = req.params.email;
+      const query = {workerEmail:email};
+      const result = await submissionCollection.find(query).toArray();
+      res.send(result)
+      console.log(email,'in side the submission');
+    })
     // delete tasks
     // ● onClicking Delete, delete the task from task Collection. And Increase the
     // (task_quantity* payable_amount) coin in his available coin
