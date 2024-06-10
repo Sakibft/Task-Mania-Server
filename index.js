@@ -80,6 +80,19 @@ async function run() {
       res.send(result)
       // console.log(user);
     })
+    // get all user
+    app.get('/user', async(req,res)=>{
+      const result = await userCollection.find().toArray();
+      res.send(result)
+    })
+    // delete user
+    app.delete('/user/:id',async(req,res)=>{
+      const id = req.params.id;
+      const query = {_id : new ObjectId(id)}
+      const result = await userCollection.deleteOne(query);
+      res.send(result)
+      console.log(id);
+    })
     // post task 
     app.post('/task', async (req, res) => {
       const task = req.body;
