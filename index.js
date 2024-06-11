@@ -1,6 +1,8 @@
 const express = require('express')
 const app = express()
 const cors = require('cors')
+const jwt = require('jsonwebtoken')
+
 require('dotenv').config();
 const stripe = require('stripe')(process.env.STRIPE_SECRETE_KEY)
 const port = process.env.PORT || 5000;
@@ -39,7 +41,32 @@ const paymentCoinCollection = client.db('TaskMania').collection('payment')
 const submissionCollection = client.db('TaskMania').collection('Submission')
 async function run() {
   try {
+    // jwt related api 
+    app.post('/jwt', async (req, res) => {
+      const user = req.body;
+       const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
+        expiresIn: '1h'
+      });
+      res.send({ token })
+    })
+    // middleware 
+    const verifyToken = async (req, res, next) => {
+      console.log(req.headers.authorization,'inside verifyToken');
+      if (!req.headers.authorization) {
+        return res.status(401).send({ message: 'forbidden access1' });
+      }
+      const token = req.headers.authorization.split(' ')[1];
 
+      jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
+        if (err) {
+          return res.status(401).send({ message: 'forbidden access' });
+        }
+        req.decoded = decoded;
+        next();
+      })
+
+      // next();
+    }
     // post user
     app.post('/user', async (req, res) => {
       const user = req.body;
@@ -72,9 +99,11 @@ async function run() {
       console.log(coin, 'update this coin in the database');
     })
     // get specific user
-    app.get('/user/:email', async (req, res) => {
+    // done!get header .
+    app.get('/user/:email', verifyToken, async (req, res) => {
+      // console.log(req.headers.authorization,'from jwt');
       const email = req.params.email;
-      console.log(email);
+      // console.log(email);
       const query = { email: email }
       const result = await userCollection.findOne(query)
       res.send(result)
@@ -134,6 +163,14 @@ async function run() {
     app.get('/tasks', async (req, res) => {
       const tasks = await taskCollection.find().toArray();
       res.send(tasks)
+    })
+    // delete task 
+    app.delete('/deleteTask/:id', async(req,res)=>{
+      const id = req.params.id;
+      console.log(id);
+      const query = {_id: new ObjectId(id)};
+      const task = await taskCollection.deleteOne(query);
+      res.send(task)
     })
     //  my tasks 
     app.get('/tasks/:email', async (req, res) => {
