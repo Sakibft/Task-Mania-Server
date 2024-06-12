@@ -313,6 +313,12 @@ async function run() {
       const result = await paymentCoinCollection.insertOne(payment)
       res.send(result)
     })
+    // get all payment 
+    app.get('/payment',async(req,res)=>{
+      const payment = await paymentCoinCollection.find().toArray();
+      // console.log(payment);
+      res.send(payment)
+    })
     // get all payment data 
     app.get( '/payment/:email', async (req, res) => {
       const email = req.params.email;
