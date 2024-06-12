@@ -51,7 +51,7 @@ async function run() {
     })
     // middleware 
     const verifyToken = async (req, res, next) => {
-      console.log(req.headers.authorization,'inside verifyToken');
+      // console.log(req.headers.authorization,'inside verifyToken');
       if (!req.headers.authorization) {
         return res.status(401).send({ message: 'forbidden access1' });
       }
@@ -79,7 +79,7 @@ async function run() {
       const result = await userCollection.insertOne(user)
       res.send(result)
     })
-    // update user coin 
+    // increase user coin 
     app.put('/user', async (req, res) => {
       const cn = req.body;
       const email = cn.email;
@@ -98,14 +98,35 @@ async function run() {
       }
       console.log(coin, 'update this coin in the database');
     })
+    // decrease curser coin
+    app.put('/decreaseUserCoin', async (req, res) => {
+      const cn = req.body;
+      const email = cn.email;
+      const coin = cn.coin;
+      const query = { email: email };
+      const user = await userCollection.findOne(query);
+      if (user) {
+        const newCoinValue = (user.coin || 0) - coin;
+        const newUp = {
+          $set: {
+            coin: newCoinValue
+          }
+        }
+        const result = await userCollection.updateOne(query, newUp)
+        res.send(result)
+      }
+      console.log(coin, 'update this coin in the database');
+    })
+    
     // get specific user
-    // done!get header .
     app.get('/user/:email', verifyToken, async (req, res) => {
-      // console.log(req.headers.authorization,'from jwt');
+      // console.log(req.headers,'from jwt');
+      // console.log(req.decoded,'decoded');
       const email = req.params.email;
-      // console.log(email);
       const query = { email: email }
+      // console.log(query,'user email');
       const result = await userCollection.findOne(query)
+    // console.log(result,'useUserData');
       res.send(result)
       // console.log(user);
     })
@@ -126,9 +147,9 @@ async function run() {
     app.put('/userStatus', async (req, res) => {
       const usr = req.body;
       const email = usr?.email;
-      const status = usr?.status;
+      const status = usr?.category;
       // console.log(email, status);
-      // console.log(usr);
+      // console.log(usr,'update status');
       const query = {email:email}
       const user = userCollection.findOne(query)
       if(user){
@@ -138,21 +159,16 @@ async function run() {
           }
         }
         const result = await userCollection.updateOne(query,newUp)
+        // console.log(result);
         res.send(result)
       }
     })
     // post task 
     app.post('/task', async (req, res) => {
       const task = req.body;
-      const { quantity, amount, email } = task;
-      const qantity = parseInt(quantity);
-      const amnt = parseInt(amount);
-      const totalCost = qantity * amnt;
-      const creator = await userCollection.findOne({ email: email })
-      if (creator.coin < totalCost) {
-        return res.status(400).json({ message: "Not enough coins. Please purchase more coins." });
-      }
-      console.log(creator);
+ console.log(task);
+   
+      
       const result = await taskCollection.insertOne(task)
       res.send(result)
     })
@@ -162,6 +178,8 @@ async function run() {
     // It will send all documents from  taskCollection where the taskCount is greater than 0  from Database.   ( use $gt ) 
     app.get('/tasks', async (req, res) => {
       const tasks = await taskCollection.find().toArray();
+      // {quantity:{ $gt : 0 }
+      // }
       res.send(tasks)
     })
     // delete task 
@@ -296,9 +314,18 @@ async function run() {
       res.send(result)
     })
     // get all payment data 
-    app.get('/payment', async (req, res) => {
-      const result = await paymentCoinCollection.find().toArray();
+    app.get( '/payment/:email', async (req, res) => {
+      const email = req.params.email;
+      const query = {email:email}
+      const result = await paymentCoinCollection.find(query).toArray();
       res.send(result);
+    })
+    // top Erner 
+    app.get('/topEarners', async(req,res)=>{
+    const toEarners = await userCollection.find({category : 'Worker'})
+    .sort({coin : - 1}).limit(6).toArray();
+    res.send(toEarners)
+    console.log(toEarners,'top');
     })
 
     await client.db("admin").command({ ping: 1 });
