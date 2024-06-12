@@ -117,10 +117,41 @@ async function run() {
       }
       console.log(coin, 'update this coin in the database');
     })
+    // verify category
+    const verifyAdmin = async (req,res,next) =>{
+      const email = req.decoded.email;
+      const query = {email:email}
+      const user = userCollection.findOne(query);
+      if (user && user.role === 'Admin') {
+        next();
+      } else {
+        res.status(403).send('Forbidden: Not a worker');
+      }
+    }
+    const verifyTaskCreator = async (req,res,next) =>{
+      const email = req.decoded.email;
+      const query = {email:email}
+      const user = userCollection.findOne(query);
+      if (user && user.role === 'Task Creator') {
+        next();
+      } else {
+        res.status(403).send('Forbidden: Not a worker');
+      }
+    }
+    const verifyWorker = async (req,res,next) =>{
+      const email = req.decoded.email;
+      const query = {email:email}
+      const user = userCollection.findOne(query);
+      if (user && user.role === 'Worker') {
+        next();
+      } else {
+        res.status(403).send('Forbidden: Not a worker');
+      }
+    }
     
     // get specific user
     app.get('/user/:email', verifyToken, async (req, res) => {
-      // console.log(req.headers,'from jwt');
+      console.log(req.headers,'from jwt');
       // console.log(req.decoded,'decoded');
       const email = req.params.email;
       const query = { email: email }
@@ -131,7 +162,7 @@ async function run() {
       // console.log(user);
     })
     // get all user
-    app.get('/user', async (req, res) => {
+    app.get('/user', verifyToken, async (req, res) => {
       const result = await userCollection.find().toArray();
       res.send(result)
     })
@@ -176,14 +207,14 @@ async function run() {
     // /tasks
     // GET
     // It will send all documents from  taskCollection where the taskCount is greater than 0  from Database.   ( use $gt ) 
-    app.get('/tasks', async (req, res) => {
+    app.get('/tasks',verifyToken, async (req, res) => {
       const tasks = await taskCollection.find().toArray();
       // {quantity:{ $gt : 0 }
       // }
       res.send(tasks)
     })
     // delete task 
-    app.delete('/deleteTask/:id', async(req,res)=>{
+    app.delete('/deleteTask/:id',verifyToken, async(req,res)=>{
       const id = req.params.id;
       console.log(id);
       const query = {_id: new ObjectId(id)};
@@ -314,7 +345,7 @@ async function run() {
       res.send(result)
     })
     // get all payment 
-    app.get('/payment',async(req,res)=>{
+    app.get('/payment',verifyToken,async(req,res)=>{
       const payment = await paymentCoinCollection.find().toArray();
       // console.log(payment);
       res.send(payment)
